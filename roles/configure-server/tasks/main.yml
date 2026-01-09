@@ -1,0 +1,26 @@
+---
+# tasks file for configure-server
+- name: Enable RKE2 service
+  systemd:
+    name: "rke2-server"
+    enabled: true
+
+- name: Start RKE2 service
+  systemd:
+    name: "rke2-server"
+    state: started
+    enabled: true
+
+- name: Give permissions to RKE2 file
+  file:
+    path: /etc/rancher/rke2
+    state: directory
+    mode: '0755'
+
+- name: Give permissions to kubeconfig file
+  file:
+    path: /etc/rancher/rke2/rke2.yaml
+    state: file
+    mode: '0666'
+
+

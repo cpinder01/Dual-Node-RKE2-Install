@@ -1,0 +1,64 @@
+- name: Uninstall RKE2
+  hosts: servers
+  vars:
+  gather_facts: False
+  become: true
+  roles:
+    - uninstall
+  tags:
+    - uninstall
+
+- name: Install RKE2 on Both Nodes
+  hosts: servers
+  gather_facts: false
+  become: true
+  roles:
+    - common
+  tags:
+    - install-base
+
+- name: Configure first node
+  hosts: local
+  gather_facts: false
+  become: true
+  roles:
+    - configure-server
+  tags:
+    - serversetup
+
+- name: Copy node token/config file to second node
+  hosts: remote
+  tasks:
+    - name: Copy to other file on ansible host 
+      copy:
+        src: /var/lib/rancher/rke2/server/node-token
+        dest: /tmp/node-token
+        mode: '0666'
+        remote_src: true
+      delegate_to: localhost
+      become: true
+    - name: Copy to other node
+      copy:
+        src: /tmp/node-token
+        dest: /tmp/node-token
+      become: true
+  tags:
+    - copy 
+
+- name: Configure second node
+  hosts: remote
+  gather_facts: false
+  become: true
+  roles:
+    - configure-second-node
+  tags:
+    - secondnodesetup
+
+- name: See K8S on node1
+  hosts: local
+  gather_facts: false
+  become: true
+  roles:
+    - post-install
+  tags:
+    - postinstall

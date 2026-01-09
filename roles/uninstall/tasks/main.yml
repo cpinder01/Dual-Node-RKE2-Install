@@ -1,0 +1,30 @@
+---
+# tasks file for uninstall
+- name: Stop RKE2 services
+  systemd:
+    name: "rke2-server"
+    state: stopped
+    enabled: false
+  ignore_errors: true
+
+- name: Run uninstall scripts
+  shell: 
+    if [ -f /usr/local/bin/rke2-uninstall.sh ]; then /usr/local/bin/rke2-uninstall.sh; fi
+  ignore_errors: true
+
+- name: Unmount kubelet
+  shell: |
+    for m in $(mount | grep /var/lib/kubelet | awk '{print $3}'); do
+      umount -l "$m" || true
+    done
+  ignore_errors: true
+
+- name: Check if RKE2 directories have been deleted
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/rancher/rke2
+    - /var/lib/kubelet
+    - /var/lib/rancher/rke2
+    - /etc/systemd/system/rke2

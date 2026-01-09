@@ -1,0 +1,7 @@
+---
+# tasks file for post-install
+
+- name: Export Kubeconfig
+  lineinfile: 
+    path: /etc/environment
+    line: KUBECONFIG=/etc/rancher/rke2/rke2.yaml 
